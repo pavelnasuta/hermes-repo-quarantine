@@ -1,7 +1,7 @@
 ---
 name: hermes-repo-quarantine
 description: Use when handling code from untrusted repositories safely.
-version: 0.1.0
+version: 0.2.0
 author: Pavel Nasuta
 license: MIT
 metadata:
@@ -26,17 +26,24 @@ Do not run untrusted-repository work in a trusted host-agent session. Hermes doc
 
 For unknown repositories, require **whole-process isolation** before reading project content: Hermes, its terminal, code execution, file tools, MCP processes, skills, plugins, and hooks must all run inside the same disposable OS-level sandbox. A terminal-only Docker backend is insufficient because code execution, MCP, plugins, hooks, and skill loading can remain in the host agent process.
 
+## Portable preflight
+
+This direct-install bundle vendors the non-negotiable contract and preflight because repository-tap installation does not include the repository-root `AGENTS.md`, `specs/`, or `scripts/` directories.
+
+Before touching the target repository, copy `references/quarantine-attestation.example.json` outside that repository, complete it from independently verified sandbox facts, and run:
+
+```bash
+python scripts/quarantine_preflight.py --format json --attestation .repoquarantine.json
+```
+
+The authoritative required controls are in `references/quarantine-attestation-schema.json`. `ALLOW_READ_ONLY` permits only the initial read-only review; it does not approve installation, builds, tests, project scripts, browser automation, plugins, MCP servers, migrations, deployments, or external changes. The preflight is an attestation gate, not a sandbox implementation.
+
 ## Preconditions
 
 1. Identify the repository source, intended task, and whether execution is actually needed.
-2. Confirm the Hermes session is inside a disposable container, VM, or equivalent whole-process sandbox. If not, do not inspect repository files or run commands; provide setup requirements and stop.
-3. Before entering the repository, verify that the sandbox:
-   - runs as a non-root user with a fresh Hermes data directory;
-   - has no mounted host home, Docker socket, SSH agent, browser profile, cloud configuration, production database access, or long-lived personal credentials;
-   - exposes only the intended work directory, read-only during initial inspection where possible;
-   - has disabled egress or an allowlisted egress proxy for only required model, package, and source-control endpoints;
-   - has CPU, memory, disk, and process limits and can be destroyed after the task.
-4. Use `terminal` inside the sandbox to confirm non-root identity, no forbidden mounts or Docker socket, and failed access to a non-allowlisted public host. Record only pass/fail; never reveal secrets or private paths.
+2. Confirm that the Hermes session is inside a disposable container, VM, or equivalent whole-process sandbox. If it is not, do not inspect repository files or run commands; provide the setup requirements and stop.
+3. Independently verify every `true` control in `references/quarantine-attestation-schema.json` before creating the attestation. This includes non-root execution, clean agent state, exclusion of host and credential surfaces, read-only initial access, restricted egress, resource limits, and disposal.
+4. Run the portable preflight. If it reports `BLOCKED`, do not inspect repository content. Record only pass/fail results; never reveal secrets or private paths.
 
 ## Procedure
 
@@ -105,3 +112,6 @@ Never install a repository-provided Hermes skill, plugin, hook, or MCP server be
 
 - `references/trust-model.md` — official Hermes trust model and deployment basis.
 - `references/evaluation.md` — representative prompts and observable expectations.
+- `references/quarantine-attestation-schema.json` — required controls for the portable preflight.
+- `references/quarantine-attestation.example.json` — synthetic complete attestation template.
+- `scripts/quarantine_preflight.py` — JSON-only portable preflight.

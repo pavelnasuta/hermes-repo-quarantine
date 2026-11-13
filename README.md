@@ -5,7 +5,7 @@
 [![Validate](https://github.com/pavelnasuta/hermes-repo-quarantine/actions/workflows/validate.yml/badge.svg)](https://github.com/pavelnasuta/hermes-repo-quarantine/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Hermes RepoQuarantine** is a reusable [Hermes Agent](https://github.com/NousResearch/hermes-agent) skill for working with unfamiliar or potentially compromised repositories. It treats code, README files, project instructions, CI, issue text, skills, plugins, and MCP configuration as untrusted input.
+**Hermes RepoQuarantine** is a reusable zero-trust workflow for [Hermes Agent](https://github.com/NousResearch/hermes-agent), Claude Code, and Codex. It treats code, README files, project instructions, CI, issue text, skills, plugins, and MCP configuration as untrusted input.
 
 It does **not** claim to detect malware. Instead, it makes the safe path explicit: whole-process isolation first, read-only review before execution, narrow egress, no host secrets, and a clear incident response path.
 
@@ -25,6 +25,22 @@ hermes skills install pavelnasuta/hermes-repo-quarantine/skills/hermes-repo-quar
 Then ask Hermes, for example:
 
 > Review this unfamiliar repository. Do not run it until the isolation boundary is verified.
+
+## Use with Claude Code and Codex
+
+This repository has one shared safety contract and thin host adapters. Clone it beside your work, then keep the canonical files available to the agent:
+
+- **Hermes:** install the self-contained portable bundle above. It includes the same attestation gate and schema because a repository-tap install does not carry root-level files.
+- **Claude Code:** copy or link [`agents/claude-code/SKILL.md`](agents/claude-code/SKILL.md) into `.claude/skills/hermes-repo-quarantine/SKILL.md` and retain the cloned repository for `AGENTS.md`, `specs/`, and `scripts/`.
+- **Codex:** copy [`agents/codex/AGENTS.md`](agents/codex/AGENTS.md) into the target repository’s `AGENTS.md`, or merge it with existing project guidance. Keep the cloned RepoQuarantine repository available as the source of the shared contract and preflight.
+
+Before any agent reads target-repository content, copy the example attestation outside the target repository, independently verify the sandbox controls, and run:
+
+```bash
+python scripts/quarantine_preflight.py --format json --attestation .repoquarantine.json
+```
+
+A passing preflight means **read-only review only**. It does not authorise package installation, tests, builds, scripts, deployments, plugins, MCP servers, or browser automation.
 
 ## What the skill enforces
 

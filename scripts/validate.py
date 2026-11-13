@@ -14,6 +14,17 @@ REQUIRED_FILES = (
     Path("README.md"),
     Path("LICENSE"),
     Path("SECURITY.md"),
+    Path("AGENTS.md"),
+    Path("specs/quarantine-contract.md"),
+    Path("specs/quarantine-attestation-schema.json"),
+    Path("scripts/quarantine_preflight.py"),
+    Path("examples/quarantine-attestation.example.json"),
+    Path("agents/hermes/SKILL.md"),
+    Path("agents/claude-code/SKILL.md"),
+    Path("agents/codex/AGENTS.md"),
+    Path("skills/hermes-repo-quarantine/scripts/quarantine_preflight.py"),
+    Path("skills/hermes-repo-quarantine/references/quarantine-attestation-schema.json"),
+    Path("skills/hermes-repo-quarantine/references/quarantine-attestation.example.json"),
 )
 FORBIDDEN_PATTERNS = (
     "/" + "root/",
@@ -58,6 +69,24 @@ def main() -> int:
         ):
             if required not in readme:
                 fail(errors, f"README.md missing install command: {required}")
+
+    adapter_paths = (
+        Path("agents/hermes/SKILL.md"),
+        Path("agents/claude-code/SKILL.md"),
+        Path("agents/codex/AGENTS.md"),
+    )
+    shared_command = "python scripts/quarantine_preflight.py --format json"
+    for adapter_path in adapter_paths:
+        full_path = ROOT / adapter_path
+        if full_path.is_file() and full_path.read_text(encoding="utf-8").count(shared_command) != 1:
+            fail(errors, f"Adapter must contain exactly one shared preflight command: {adapter_path}")
+        if full_path.is_file() and "AGENTS.md" not in full_path.read_text(encoding="utf-8"):
+            fail(errors, f"Adapter must reference the canonical contract: {adapter_path}")
+
+    ignored_patterns = (ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()
+    for relative_path in REQUIRED_FILES:
+        if str(relative_path) in ignored_patterns or relative_path.name in ignored_patterns:
+            fail(errors, f"Required file is ignored by .gitignore: {relative_path}")
 
     for path in ROOT.rglob("*"):
         if not path.is_file() or ".git" in path.parts or "__pycache__" in path.parts:
