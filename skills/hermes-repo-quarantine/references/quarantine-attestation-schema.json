@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "required_controls": [
+    "whole_process_isolation",
+    "non_root",
+    "fresh_agent_state",
+    "no_host_home",
+    "no_docker_socket",
+    "no_ssh_agent",
+    "no_browser_profile",
+    "no_cloud_configuration",
+    "no_production_database_access",
+    "no_ambient_credentials",
+    "worktree_read_only_initial",
+    "egress_restricted",
+    "resource_limits",
+    "disposable_environment"
+  ]
+}

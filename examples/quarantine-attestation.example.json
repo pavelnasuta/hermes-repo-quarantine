@@ -1,0 +1,18 @@
+{
+  "whole_process_isolation": true,
+  "non_root": true,
+  "fresh_agent_state": true,
+  "no_host_home": true,
+  "no_docker_socket": true,
+  "no_ssh_agent": true,
+  "no_browser_profile": true,
+  "no_cloud_configuration": true,
+  "no_production_database_access": true,
+  "no_ambient_credentials": true,
+  "worktree_read_only_initial": true,
+  "egress_restricted": true,
+  "resource_limits": true,
+  "disposable_environment": true,
+  "sandbox_kind": "disposable-container-or-vm",
+  "reviewed_by": "operator"
+}
