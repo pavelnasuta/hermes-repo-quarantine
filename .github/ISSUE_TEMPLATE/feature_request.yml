@@ -1,0 +1,28 @@
+name: Feature request
+description: Propose a portable improvement to the skill.
+title: "feature: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What safety or usability problem should the skill solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Describe the proposed workflow and its security trade-offs.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: This proposal does not require host secrets, privileged containers, host networking, or a Docker socket.
+          required: true
+        - label: This proposal can be tested with a synthetic or public fixture.
+          required: true
